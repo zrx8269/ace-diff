@@ -206,22 +206,10 @@ AceDiff.prototype = {
 
   destroy() {
     // destroy the two editors
-    const leftValue = this.editors.left.ace.getValue();
     this.editors.left.ace.destroy();
-    let oldDiv = this.editors.left.ace.container;
-    let newDiv = oldDiv.cloneNode(false);
-    newDiv.textContent = leftValue;
-    oldDiv.parentNode.replaceChild(newDiv, oldDiv);
-
-    const rightValue = this.editors.right.ace.getValue();
     this.editors.right.ace.destroy();
-    oldDiv = this.editors.right.ace.container;
-    newDiv = oldDiv.cloneNode(false);
-    newDiv.textContent = rightValue;
-    oldDiv.parentNode.replaceChild(newDiv, oldDiv);
-
-    document.getElementById(this.options.classes.gutterID).innerHTML = '';
     removeEventHandlers();
+    this.el.innerHTML = '';
   },
 };
 

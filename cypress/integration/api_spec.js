@@ -39,4 +39,14 @@ describe('Ace-diff API', () => {
       });
     });
   });
+
+  context('destroy()', () => {
+    it('destroys all handlers and markup', () => {
+      cy.window().then((win) => {
+        const el = win.document.querySelectorAll(win.aceDiffer.options.element)[0];
+        win.aceDiffer.destroy();
+        expect(el.innerHTML).to.equal('');
+      });
+    });
+  });
 });
