@@ -171,17 +171,31 @@ AceDiff.prototype = {
       left: 0,
       right: 0,
     };
+    var lastEqual='';
 
     diff.forEach(function (chunk, index, array) {
       const chunkType = chunk[0];
       let text = chunk[1];
 
       // Fix for #28 https://github.com/ace-diff/ace-diff/issues/28
-      if (array[index + 1] && text.endsWith('\n') && array[index + 1][1].startsWith('\n')) {
+      if (array[index + 1] && text.endsWith('\n') && array[index + 1][1].startsWith('\n') && lastEqual.endsWith('\n')) {
         text += '\n';
         diff[index][1] = text;
         diff[index + 1][1] = diff[index + 1][1].replace(/^\n/, '');
       }
+
+       // zrx add: Fix for #41 https://github.com/ace-diff/ace-diff/issues/41
+       var left = offset.left; 
+       if (array[index - 1] && !array[index - 1][1].endsWith('\n') && text.startsWith('\n\n')
+         && chunkType === C.DIFF_DELETE && array[index - 1][0] === C.DIFF_EQUAL) {
+        left = left + 1;
+       }
+ 
+       var right = offset.right;
+       if (array[index - 1] && !array[index - 1][1].endsWith('\n') && text.startsWith('\n\n')
+         && chunkType === C.DIFF_INSERT && array[index - 1][0] === C.DIFF_EQUAL) {
+           right = right + 1;
+       }
 
       // oddly, occasionally the algorithm returns a diff with no changes made
       if (text.length === 0) {
@@ -522,6 +536,20 @@ function computeDiff(acediff, diffType, offsetLeft, offsetRight, diffText) {
       rightStartLine,
       rightEndLine: rightStartLine + numRows,
     };
+
+    // zrx add: if the left editor ends with a new line, it also should mark this
+    if (lineInfo.leftStartLine + 1 === lineInfo.leftEndLine && 
+      lineInfo.leftEndLine === acediff.editors.left.ace.getSession().getLength() &&
+      lineInfo.rightStartLine === lineInfo.rightEndLine &&
+      lineInfo.rightStartLine === acediff.editors.right.ace.getSession().getLength() &&
+      /^\n/.test(diffText)) {
+        lineInfo = {
+          leftStartLine: lineInfo.leftStartLine - 1,
+          leftEndLine: lineInfo.leftEndLine,
+          rightStartLine: lineInfo.rightStartLine - 1,
+          rightEndLine: lineInfo.rightEndLine
+        }
+      }
   } else {
     var info = getSingleDiffInfo(acediff.editors.right, offsetRight, diffText);
 
@@ -564,6 +592,20 @@ function computeDiff(acediff, diffType, offsetLeft, offsetRight, diffText) {
       rightStartLine: info.startLine,
       rightEndLine: info.endLine + 1,
     };
+
+    // zrx add: if the right editor ends with a new line, it also should mark this
+    if (lineInfo.leftStartLine === lineInfo.leftEndLine && 
+      lineInfo.leftStartLine === acediff.editors.left.ace.getSession().getLength() &&
+      lineInfo.rightStartLine === lineInfo.rightEndLine - 1 &&
+      lineInfo.rightEndLine === acediff.editors.right.ace.getSession().getLength() &&
+      /^\n/.test(diffText)) {
+        lineInfo = {
+          leftStartLine: lineInfo.leftStartLine - 1,
+          leftEndLine: lineInfo.leftStartLine,
+          rightStartLine: lineInfo.rightStartLine - 1,
+          rightEndLine: lineInfo.rightEndLine
+        }
+      }
   }
 
   return lineInfo;
