@@ -171,6 +171,8 @@ AceDiff.prototype = {
       left: 0,
       right: 0,
     };
+
+     // zrx added: Fix for #41
     var lastEqual='';
 
     diff.forEach(function (chunk, index, array) {
@@ -178,23 +180,24 @@ AceDiff.prototype = {
       let text = chunk[1];
 
       // Fix for #28 https://github.com/ace-diff/ace-diff/issues/28
+       // zrx changed: Fix for #41
       if (array[index + 1] && text.endsWith('\n') && array[index + 1][1].startsWith('\n') && lastEqual.endsWith('\n')) {
         text += '\n';
         diff[index][1] = text;
         diff[index + 1][1] = diff[index + 1][1].replace(/^\n/, '');
       }
 
-       // zrx add: Fix for #41 https://github.com/ace-diff/ace-diff/issues/41
+       // zrx added: Fix for #41 https://github.com/ace-diff/ace-diff/issues/41
        var left = offset.left; 
        if (array[index - 1] && !array[index - 1][1].endsWith('\n') && text.startsWith('\n\n')
          && chunkType === C.DIFF_DELETE && array[index - 1][0] === C.DIFF_EQUAL) {
-        left = left + 1;
+         left = left + 1;
        }
  
        var right = offset.right;
        if (array[index - 1] && !array[index - 1][1].endsWith('\n') && text.startsWith('\n\n')
          && chunkType === C.DIFF_INSERT && array[index - 1][0] === C.DIFF_EQUAL) {
-           right = right + 1;
+          right = right + 1;
        }
 
       // oddly, occasionally the algorithm returns a diff with no changes made
@@ -205,10 +208,12 @@ AceDiff.prototype = {
         offset.left += text.length;
         offset.right += text.length;
       } else if (chunkType === C.DIFF_DELETE) {
-        diffs.push(computeDiff(this, C.DIFF_DELETE, offset.left, offset.right, text));
+        // zrx changed
+        diffs.push(computeDiff(this, C.DIFF_DELETE, left, offset.right, text));
         offset.right += text.length;
       } else if (chunkType === C.DIFF_INSERT) {
-        diffs.push(computeDiff(this, C.DIFF_INSERT, offset.left, offset.right, text));
+        // zrx changed
+        diffs.push(computeDiff(this, C.DIFF_INSERT, offset.left, right, text));
         offset.left += text.length;
       }
     }, this);
@@ -537,7 +542,7 @@ function computeDiff(acediff, diffType, offsetLeft, offsetRight, diffText) {
       rightEndLine: rightStartLine + numRows,
     };
 
-    // zrx add: if the left editor ends with a new line, it also should mark this
+    // zrx added: if the left editor ends with a new line, it also should mark this
     if (lineInfo.leftStartLine + 1 === lineInfo.leftEndLine && 
       lineInfo.leftEndLine === acediff.editors.left.ace.getSession().getLength() &&
       lineInfo.rightStartLine === lineInfo.rightEndLine &&
@@ -593,7 +598,7 @@ function computeDiff(acediff, diffType, offsetLeft, offsetRight, diffText) {
       rightEndLine: info.endLine + 1,
     };
 
-    // zrx add: if the right editor ends with a new line, it also should mark this
+    // zrx added: if the right editor ends with a new line, it also should mark this
     if (lineInfo.leftStartLine === lineInfo.leftEndLine && 
       lineInfo.leftStartLine === acediff.editors.left.ace.getSession().getLength() &&
       lineInfo.rightStartLine === lineInfo.rightEndLine - 1 &&
