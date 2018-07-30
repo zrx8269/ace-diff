@@ -548,13 +548,26 @@ function computeDiff(acediff, diffType, offsetLeft, offsetRight, diffText) {
       lineInfo.rightStartLine === lineInfo.rightEndLine &&
       lineInfo.rightStartLine === acediff.editors.right.ace.getSession().getLength() &&
       /^\n/.test(diffText)) {
-        lineInfo = {
-          leftStartLine: lineInfo.leftStartLine - 1,
-          leftEndLine: lineInfo.leftEndLine,
-          rightStartLine: lineInfo.rightStartLine - 1,
-          rightEndLine: lineInfo.rightEndLine
-        }
+      lineInfo = {
+        leftStartLine: lineInfo.leftStartLine - 1,
+        leftEndLine: lineInfo.leftEndLine,
+        rightStartLine: lineInfo.rightStartLine - 1,
+        rightEndLine: lineInfo.rightEndLine
       }
+    }
+
+    if (lineInfo.leftStartLine === lineInfo.leftEndLine && 
+      lineInfo.leftEndLine + 1 === acediff.editors.left.ace.getSession().getLength() &&
+      lineInfo.rightStartLine === lineInfo.rightEndLine &&
+      lineInfo.rightStartLine + 1 === acediff.editors.right.ace.getSession().getLength() &&
+      /^\n/.test(diffText)) {
+      lineInfo = {
+        leftStartLine: lineInfo.leftStartLine - 1,
+        leftEndLine: lineInfo.leftEndLine + 1,
+        rightStartLine: lineInfo.rightStartLine,
+        rightEndLine: lineInfo.rightEndLine + 1
+      }
+    }
   } else {
     var info = getSingleDiffInfo(acediff.editors.right, offsetRight, diffText);
 
@@ -604,13 +617,26 @@ function computeDiff(acediff, diffType, offsetLeft, offsetRight, diffText) {
       lineInfo.rightStartLine === lineInfo.rightEndLine - 1 &&
       lineInfo.rightEndLine === acediff.editors.right.ace.getSession().getLength() &&
       /^\n/.test(diffText)) {
-        lineInfo = {
-          leftStartLine: lineInfo.leftStartLine - 1,
-          leftEndLine: lineInfo.leftStartLine,
-          rightStartLine: lineInfo.rightStartLine - 1,
-          rightEndLine: lineInfo.rightEndLine
-        }
+      lineInfo = {
+        leftStartLine: lineInfo.leftStartLine - 1,
+        leftEndLine: lineInfo.leftStartLine,
+        rightStartLine: lineInfo.rightStartLine - 1,
+        rightEndLine: lineInfo.rightEndLine
       }
+    }
+
+    if (lineInfo.leftStartLine === lineInfo.leftEndLine && 
+      lineInfo.leftEndLine + 1 === acediff.editors.left.ace.getSession().getLength() &&
+      lineInfo.rightStartLine === lineInfo.rightEndLine &&
+      lineInfo.rightStartLine + 1 === acediff.editors.right.ace.getSession().getLength() &&
+      /^\n/.test(diffText)) {
+      lineInfo = {
+        leftStartLine: lineInfo.leftStartLine,
+        leftEndLine: lineInfo.leftEndLine + 1,
+        rightStartLine: lineInfo.rightStartLine - 1,
+        rightEndLine: lineInfo.rightEndLine + 1
+      }
+    }
   }
 
   return lineInfo;
